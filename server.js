@@ -9,7 +9,7 @@ const io = new Server(server);
 app.use(express.static("public"));
 
 let players = {};
-let ball = { x: 300, y: 200, vx: 3, vy: 3 };
+let ball = { x: 300, y: 200, vx: 5, vy: 5 };
 
 io.on("connection", (socket) => {
     console.log("Yeni oyuncu:", socket.id);
