@@ -1,6 +1,6 @@
-# 🎮 Multiplayer Pong (Docker + Socket.IO)
+# 🎮 Multiplayer DX-Ball (Docker + Socket.IO)
 
-This project provides a browser-based **multiplayer Pong game**.  
+This project provides a browser-based **multiplayer basic dx-ball game**.  
 Players can connect to the same server and play in real time.  
 
 ## 🚀 Run

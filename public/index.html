@@ -2,52 +2,88 @@
 <html>
 
 <head>
-    <meta charset="UTF-8">
-    <title>Multiplayer Pong</title>
-    <style>
-        canvas {
-            background: black;
-            display: block;
-            margin: auto;
-        }
-    </style>
+  <meta charset="UTF-8">
+    <title>Multiplayer DX-Ball</title>
+  <style>
+    canvas {
+      background: black;
+      display: block;
+      margin: auto;
+    }
+
+    body {
+      text-align: center;
+      color: white;
+      font-family: sans-serif;
+    }
+  </style>
 </head>
 
 <body>
-    <canvas id="game" width="600" height="400"></canvas>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        const canvas = document.getElementById("game");
-        const ctx = canvas.getContext("2d");
-        let players = {};
-        let ball = { x: 0, y: 0 };
+  <h1>Multiplayer DX-Ball</h1>
+  <canvas id="game" width="600" height="400"></canvas>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    let players = {}, ball = {}, blocks = [];
 
-        document.addEventListener("mousemove", (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const y = e.clientY - rect.top;
-            socket.emit("move", y);
-        });
+    document.addEventListener("mousemove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left - 50; // paddle width /2
+      socket.emit("move", x);
+    });
 
-        socket.on("state", (state) => {
-            players = state.players;
-            ball = state.ball;
-            draw();
-        });
+    socket.on("state", (state) => {
+      players = state.players;
+      ball = state.ball;
+      blocks = state.blocks;
+      draw();
+    });
 
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "white";
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            Object.values(players).forEach((p, i) => {
-                ctx.fillRect(i === 0 ? 10 : 580, p.y, 10, 80);
-            });
-
-            ctx.beginPath();
-            ctx.arc(ball.x, ball.y, 10, 0, Math.PI * 2);
-            ctx.fill();
+      // Blocks
+      for (let b of blocks) {
+        if (b.alive) {
+          ctx.fillStyle = b.color || "red"; // default red
+          ctx.fillRect(b.x, b.y, b.width, b.height);
         }
-    </script>
+      }
+
+      // Paddle
+      ctx.fillStyle = "white";
+      Object.values(players).forEach(p => {
+        ctx.fillRect(p.x, canvas.height - 20, 100, 10);
+      });
+
+      // Ball
+      ctx.fillStyle = "yellow";
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Level & Score
+      ctx.fillStyle = "white";
+      ctx.fillText(`Level: ${level}`, 500, 20);
+
+      let y = 40;
+      for (let id in players) {
+        ctx.fillText(`Player ${id.substring(0, 4)}: ${players[id].score}`, 10, y);
+        y += 20;
+      }
+
+      // 🔹 Game Over screen
+      if (gameOver) {
+        ctx.fillStyle = "red";
+        ctx.font = "30px Arial";
+        ctx.fillText("GAME OVER", canvas.width / 2 - 80, canvas.height / 2);
+      }
+    }
+
+  </script>
 </body>
 
 </html>
